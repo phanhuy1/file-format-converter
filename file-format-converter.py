@@ -34,7 +34,7 @@ def file_converter(src_file_names, tgt_base_dir, ds_name):
         to_json(df, tgt_base_dir, ds_name, file_name)
         
 def process_files(ds_names=None):
-    src_base_dir = 'data/retail_db/'
+    src_base_dir = 'data/retail_db'
     tgt_base_dir = 'data/retail_db_json'
     schemas = json.load(open(f'{src_base_dir}/schemas.json'))
     if not ds_names:
@@ -44,3 +44,5 @@ def process_files(ds_names=None):
         file_converter(src_base_dir, tgt_base_dir, ds_name)
         
 
+if __name__ == '__main__':
+    process_files()
