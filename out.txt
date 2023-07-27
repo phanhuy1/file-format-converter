@@ -1,0 +1,6 @@
+Processing departments
+Processing categories
+Processing orders
+Processing products
+Processing customers
+Processing order_items
