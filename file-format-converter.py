@@ -1,3 +1,4 @@
+import sys
 import glob
 import os
 import json
@@ -11,7 +12,6 @@ def get_columns_name(schemas, table, sorting_key='column_position'):
 def read_csv(file, schemas):
     file_path = re.split('[/\\\]', file)
     ds_name = file_path[-2]
-    file_name = file_path[-1]
     columns = get_columns_name(schemas, ds_name)
     df = pd.read_csv(file, names=columns)
     return df
@@ -28,21 +28,30 @@ def to_json(df, tgt_base_dir, ds_name, file_name):
 def file_converter(src_file_names, tgt_base_dir, ds_name):
     schemas = json.load(open(f'{src_file_names}/schemas.json'))
     files = glob.glob(f'{src_file_names}/{ds_name}/part-*')
+    if len(files) == 0:
+        raise NameError(f'No files found for {ds_name}')
     for file in files:
         df = read_csv(file, schemas)
         file_name = re.split('[/\\\]', file)[-1]
         to_json(df, tgt_base_dir, ds_name, file_name)
         
 def process_files(ds_names=None):
-    src_base_dir = 'data/retail_db'
-    tgt_base_dir = 'data/retail_db_json'
+    src_base_dir = os.environ.get('SRC_BASE_DIR')
+    tgt_base_dir = os.environ.get('TGT_BASE_DIR')
     schemas = json.load(open(f'{src_base_dir}/schemas.json'))
     if not ds_names:
         ds_names = schemas.keys()
     for ds_name in ds_names:
-        print(f'Processing {ds_name}')
-        file_converter(src_base_dir, tgt_base_dir, ds_name)
-        
+        try:
+            print(f'Processing {ds_name}')
+            file_converter(src_base_dir, tgt_base_dir, ds_name)
+        except NameError as ne:
+            print(f'Error processing {ds_name} : {ne}')
+            pass
 
 if __name__ == '__main__':
-    process_files()
+    if len(sys.argv) == 2:
+        ds_names = json.loads(sys.argv[1])
+        process_files(ds_names)
+    else:
+        process_files()
